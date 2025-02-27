@@ -25,7 +25,7 @@
     1.  Clonez le dépôt :
         
         ```bash
-        git clone <URL_du_dépôt>
+        git clone https://github.com/Lilecaz/ProjetQual
         cd backend
         ```
         

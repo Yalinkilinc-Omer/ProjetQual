@@ -1,4 +1,4 @@
-package org.xchange.controller;
+package org.xchange.java.controller;
 
 public class ExchangeController {
 }

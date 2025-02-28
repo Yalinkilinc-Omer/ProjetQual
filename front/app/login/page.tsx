@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import axios from "axios"
 
 export default function Login() {
   const router = useRouter()
@@ -18,7 +19,7 @@ export default function Login() {
   const registered = searchParams.get("registered")
 
   const [formData, setFormData] = useState({
-    email: "",
+    usename: "",
     password: "",
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -74,10 +75,11 @@ export default function Login() {
 
     try {
       // This would be replaced with your actual API call
-      console.log("Logging in user:", formData)
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/login`,
+        formData
+      );
+      console.log("Login response:", response.data)
 
       // Redirect to dashboard after successful login
       router.push("/dashboard")

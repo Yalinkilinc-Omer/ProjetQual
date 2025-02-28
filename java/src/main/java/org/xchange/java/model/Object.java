@@ -1,4 +1,4 @@
-package org.xchange.model;
+package org.xchange.java.model;
 
 import jakarta.persistence.*;
 

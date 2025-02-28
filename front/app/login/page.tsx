@@ -11,15 +11,16 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import axios from "axios"
+import { useAuth } from "@/context/auth-context"
 
 export default function Login() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const registered = searchParams.get("registered")
+  const { login } = useAuth()
 
   const [formData, setFormData] = useState({
-    usename: "",
+    username: "",
     password: "",
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -52,8 +53,8 @@ export default function Login() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required"
     }
 
     if (!formData.password) {
@@ -74,18 +75,14 @@ export default function Login() {
     setIsSubmitting(true)
 
     try {
-      // This would be replaced with your actual API call
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/login`,
-        formData
-      );
-      console.log("Login response:", response.data)
+      // Use the login function from auth context
+      await login(formData.username, formData.password)
 
       // Redirect to dashboard after successful login
       router.push("/dashboard")
     } catch (error) {
       console.error("Login error:", error)
-      setErrors({ form: "Invalid email or password. Please try again." })
+      setErrors({ form: "Invalid username or password. Please try again." })
     } finally {
       setIsSubmitting(false)
     }
@@ -110,20 +107,18 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="john.doe@example.com"
-                value={formData.email}
+                id="username"
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
-                className={errors.email ? "border-red-500" : ""}
+                className={errors.username ? "border-red-500" : ""}
               />
-              {errors.email && (
+              {errors.username && (
                 <p className="text-red-500 text-sm flex items-center mt-1">
                   <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.email}
+                  {errors.username}
                 </p>
               )}
             </div>

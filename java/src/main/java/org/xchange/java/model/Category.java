@@ -2,6 +2,8 @@ package org.xchange.java.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class Category {
     @Id
@@ -26,4 +28,8 @@ public class Category {
     public String getDescription() {
         return description;
     }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
 }

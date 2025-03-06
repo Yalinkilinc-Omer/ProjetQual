@@ -12,11 +12,11 @@ public class Exchange {
 
     @ManyToOne
     @JoinColumn(name = "proposed_object_id")
-    private Object proposedObject;
+    private ExchangeObject proposedExchangeObject;
 
     @ManyToOne
     @JoinColumn(name = "requested_object_id")
-    private Object requestedObject;
+    private ExchangeObject requestedExchangeObject;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -39,20 +39,20 @@ public class Exchange {
         this.status = status;
     }
 
-    public Object getProposedObject() {
-        return proposedObject;
+    public ExchangeObject getProposedObject() {
+        return proposedExchangeObject;
     }
 
-    public void setProposedObject(Object proposedObject) {
-        this.proposedObject = proposedObject;
+    public void setProposedObject(ExchangeObject proposedExchangeObject) {
+        this.proposedExchangeObject = proposedExchangeObject;
     }
 
-    public Object getRequestedObject() {
-        return requestedObject;
+    public ExchangeObject getRequestedObject() {
+        return requestedExchangeObject;
     }
 
-    public void setRequestedObject(Object requestedObject) {
-        this.requestedObject = requestedObject;
+    public void setRequestedObject(ExchangeObject requestedExchangeObject) {
+        this.requestedExchangeObject = requestedExchangeObject;
     }
 
     public User getUser() {

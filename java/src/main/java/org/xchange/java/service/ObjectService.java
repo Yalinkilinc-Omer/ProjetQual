@@ -2,7 +2,7 @@ package org.xchange.java.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.xchange.java.model.Object;
+import org.xchange.java.model.ExchangeObject;
 import org.xchange.java.repository.ObjectRepository;
 
 import java.util.List;
@@ -13,21 +13,21 @@ public class ObjectService {
     @Autowired
     private ObjectRepository objectRepository;
 
-    public List<Object> getAllObjects() {
+    public List<ExchangeObject> getAllObjects() {
         return objectRepository.findAll();
     }
 
-    public Optional<Object> getObjectById(Long id) {
+    public Optional<ExchangeObject> getObjectById(Long id) {
         return objectRepository.findById(id);
     }
 
-    public Object createObject(Object object) {
-        return objectRepository.save(object);
+    public ExchangeObject createObject(ExchangeObject exchangeObject) {
+        return objectRepository.save(exchangeObject);
     }
 
-    public Object updateObject(Long id, Object object) {
-        object.setId(id);
-        return objectRepository.save(object);
+    public ExchangeObject updateObject(Long id, ExchangeObject exchangeObject) {
+        exchangeObject.setId(id);
+        return objectRepository.save(exchangeObject);
     }
 
     public void deleteObject(Long id) {

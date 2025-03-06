@@ -13,6 +13,7 @@ type AuthContextType = {
     user: User | null
     isLoading: boolean
     login: (username: string, password: string) => Promise<void>
+    register: (username: string, email: string, password: string) => Promise<void>
     logout: () => void
     isAuthenticated: boolean
 }
@@ -24,20 +25,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        // Check if user is already logged in on page load
         const checkAuthStatus = async () => {
             try {
-                // Try to get user data from localStorage first for immediate UI update
                 const storedUser = localStorage.getItem("user")
                 if (storedUser) {
                     setUser(JSON.parse(storedUser))
                 }
-
-                // Then verify with the server (optional, for added security)
-                // const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/me`)
-                // setUser(response.data)
             } catch (error) {
-                // If server verification fails, clear local storage
                 localStorage.removeItem("user")
                 setUser(null)
             } finally {
@@ -57,8 +51,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const userData = response.data
             setUser(userData)
+            localStorage.setItem("user", JSON.stringify(userData))
 
-            // Store user data in localStorage for persistence
+            return userData
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const register = async (username: string, email: string, password: string) => {
+        try {
+            const response = await axios.post(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/register`,
+                { username, email, password }
+            )
+
+            const userData = response.data
+            setUser(userData)
             localStorage.setItem("user", JSON.stringify(userData))
 
             return userData
@@ -68,12 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const logout = () => {
-        // Clear user from state and localStorage
         setUser(null)
         localStorage.removeItem("user")
-
-        // Optional: Call logout endpoint
-        // axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/logout`)
     }
 
     return (
@@ -82,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 user,
                 isLoading,
                 login,
+                register,
                 logout,
                 isAuthenticated: !!user,
             }}

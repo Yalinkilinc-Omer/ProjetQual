@@ -46,12 +46,12 @@ export default function ObjectsPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`)  // Assurez-vous que l'endpoint existe
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`)
         if (!response.ok) {
           throw new Error("Failed to fetch categories")
         }
         const data = await response.json()
-        setCategories(["All Categories", ...data.map((cat: any) => cat.name)])  // Ajouter "All Categories" comme option par défaut
+        setCategories(["All Categories", ...data.map((cat: any) => cat.name)])
       } catch (error) {
         console.error("Error fetching categories:", error)
       }
@@ -88,9 +88,9 @@ export default function ObjectsPage() {
 
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search id="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search objects..."
+            placeholder="Rechercher"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -100,7 +100,7 @@ export default function ObjectsPage() {
         <div className="w-full md:w-64">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger>
-              <Filter className="mr-2 h-4 w-4" />
+              <Filter id="filter" className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>

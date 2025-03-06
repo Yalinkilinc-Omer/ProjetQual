@@ -1,7 +1,10 @@
+"use client"
 import Link from "next/link"
+import { useAuth } from "@/context/auth-context"
 import { Button } from "@/components/ui/button"
 
 export default function Home() {
+  const { user, isAuthenticated, logout } = useAuth()
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
       <div className="container mx-auto px-4 py-16">
@@ -13,27 +16,32 @@ export default function Home() {
           </p>
         </header>
 
-        <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center">
-            <h2 className="text-2xl font-semibold text-blue-700 mb-4">Already a member?</h2>
-            <p className="text-gray-600 mb-6 text-center">
-              Sign in to your account to continue exchanging objects with the community.
-            </p>
-            <Link href="/login" className="w-full">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">Login</Button>
-            </Link>
-          </div>
+        {!isAuthenticated ? (
+          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center">
+              <h2 className="text-2xl font-semibold text-blue-700 mb-4">Already a member?</h2>
+              <p className="text-gray-600 mb-6 text-center">
+                Sign in to your account to continue exchanging objects with the community.
+              </p>
+              <Link href="/login" className="w-full">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">Login</Button>
+              </Link>
+            </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center">
-            <h2 className="text-2xl font-semibold text-blue-700 mb-4">New to ObjectXchange?</h2>
-            <p className="text-gray-600 mb-6 text-center">
-              Create an account to start sharing and exchanging objects with others.
-            </p>
-            <Link href="/register" className="w-full">
-              <Button className="w-full bg-green-600 hover:bg-green-700">Register</Button>
-            </Link>
+            <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center">
+              <h2 className="text-2xl font-semibold text-blue-700 mb-4">New to ObjectXchange?</h2>
+              <p className="text-gray-600 mb-6 text-center">
+                Create an account to start sharing and exchanging objects with others.
+              </p>
+              <Link href="/register" className="w-full">
+                <Button className="w-full bg-green-600 hover:bg-green-700">Register</Button>
+              </Link>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div>
+          </div>
+        )}
 
         <div className="mt-20">
           <h2 className="text-3xl font-bold text-center text-blue-800 mb-8">How It Works</h2>

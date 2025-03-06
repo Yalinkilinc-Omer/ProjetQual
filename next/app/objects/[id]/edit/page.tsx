@@ -263,7 +263,6 @@ export default function EditObjectPage() {
             }
 
             const data = await response.json()
-            console.log("Object updated successfully:", data)
 
             // Handle image upload if needed (this would be a separate API call)
             // if (image) {

@@ -158,7 +158,6 @@ export default function AddObjectPage() {
       }
 
       const data = await response.json()
-      console.log("Object added successfully:", data)
 
       // Redirect to dashboard after successful submission
       router.push("/dashboard?objectAdded=true")

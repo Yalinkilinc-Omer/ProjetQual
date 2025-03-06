@@ -35,7 +35,6 @@ export default function ObjectDetailPage() {
           throw new Error("Failed to fetch object details")
         }
         const data = await response.json()
-        console.log(data)
 
         setObject({
           id: data.id,

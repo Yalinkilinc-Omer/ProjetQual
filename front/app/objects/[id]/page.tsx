@@ -17,34 +17,6 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { RefreshCw, User, MapPin, Calendar, ArrowLeft, MessageCircle } from "lucide-react"
 
-// Mock data - this would come from your API
-const mockObjects = [
-  {
-    id: "1",
-    name: "Vintage Camera",
-    description:
-      "A beautiful vintage film camera in excellent condition. This camera was manufactured in the 1970s and still works perfectly. It comes with the original leather case and strap. Perfect for photography enthusiasts or collectors.",
-    category: "Electronics",
-    owner: "John Doe",
-    ownerId: "user1",
-    location: "Paris",
-    createdAt: "2023-05-15",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: "2",
-    name: "Mountain Bike",
-    description:
-      "Adult mountain bike, barely used, perfect for trails. This bike has been used only a few times and is in excellent condition. It has 21 speeds, disc brakes, and front suspension. Suitable for riders between 5'5\" and 6'0\".",
-    category: "Sports",
-    owner: "Alice Smith",
-    ownerId: "user2",
-    location: "Lyon",
-    createdAt: "2023-06-20",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-]
-
 export default function ObjectDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -55,22 +27,28 @@ export default function ObjectDetailPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
-    // Simulate API call to fetch object details
     const fetchObject = async () => {
       setIsLoading(true)
       try {
-        // In a real app, this would be an API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        const foundObject = mockObjects.find((obj) => obj.id === params.id)
-
-        if (foundObject) {
-          setObject(foundObject)
-        } else {
-          // Object not found, redirect to 404 or objects page
-          router.push("/objects")
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/object/${params.id}`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch object details")
         }
+        const data = await response.json()
+
+        setObject({
+          id: data.id,
+          name: data.name ?? "Unnamed object",
+          description: data.description ?? "No description available.",
+          category: data.category?.name ?? "No category",
+          owner: data.owner?.username ?? "Unknown owner",
+          location: data.owner?.location ?? "Unknown location",
+          createdAt: data.createdAt ?? "Date unknown",
+          image: data.image ?? "/placeholder.svg?height=400&width=600",
+        })
       } catch (error) {
         console.error("Error fetching object:", error)
+        router.push("/objects")
       } finally {
         setIsLoading(false)
       }
@@ -84,15 +62,18 @@ export default function ObjectDetailPage() {
   const handleExchangeRequest = async () => {
     setIsSubmitting(true)
     try {
-      // Simulate API call to send exchange request
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchange`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ objectId: object.id, message: exchangeMessage }),
+      })
 
-      // Close dialog and show success message
+      if (!response.ok) {
+        throw new Error("Failed to send exchange request")
+      }
+
       setIsDialogOpen(false)
-      // In a real app, you would show a success notification
       alert("Exchange request sent successfully!")
-
-      // Reset form
       setExchangeMessage("")
     } catch (error) {
       console.error("Error sending exchange request:", error)
@@ -104,10 +85,8 @@ export default function ObjectDetailPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-16 flex justify-center items-center">
-        <div className="flex flex-col items-center">
-          <RefreshCw className="h-8 w-8 text-blue-600 animate-spin" />
-          <p className="mt-4 text-gray-600">Loading object details...</p>
-        </div>
+        <RefreshCw className="h-8 w-8 text-blue-600 animate-spin" />
+        <p className="ml-4 text-gray-600">Loading object details...</p>
       </div>
     )
   }
@@ -137,7 +116,7 @@ export default function ObjectDetailPage() {
       <div className="grid md:grid-cols-2 gap-8">
         <div>
           <div className="rounded-lg overflow-hidden shadow-md">
-            <img src={object.image || "/placeholder.svg"} alt={object.name} className="w-full h-auto" />
+            <img src={object.image} alt={object.name} className="w-full h-auto" />
           </div>
         </div>
 
@@ -180,8 +159,7 @@ export default function ObjectDetailPage() {
               <DialogHeader>
                 <DialogTitle>Request Exchange for {object.name}</DialogTitle>
                 <DialogDescription>
-                  Send a message to the owner explaining why you're interested in this item and what you'd like to
-                  exchange it for.
+                  Send a message to the owner explaining what you'd like to exchange for this item.
                 </DialogDescription>
               </DialogHeader>
 
@@ -213,4 +191,3 @@ export default function ObjectDetailPage() {
     </div>
   )
 }
-

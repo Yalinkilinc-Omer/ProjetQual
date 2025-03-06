@@ -3,7 +3,7 @@ package org.xchange.java.model;
 import jakarta.persistence.*;
 
 @Entity
-public class Object {
+public class ExchangeObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

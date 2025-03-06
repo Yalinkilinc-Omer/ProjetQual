@@ -61,30 +61,38 @@ export default function Dashboard() {
   }, [user])
 
   // Fetch exchange requests (requests received)
+  // Fetch exchange requests (requests received)
   useEffect(() => {
     const fetchExchangeRequests = async (retryCount = 0) => {
-      if (!user) {
-        return
-      }
+      if (!user) return
 
       try {
         setIsLoadingRequests(true)
         setRequestsError(null)
 
-        // Check if API base URL is defined
+
+        // ici je dois montrer les demandes d'échange reçues tous ce qui 
+        // est en dessous n'est pas bon pour l'instant 
         if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
           throw new Error("API base URL is not defined. Please check your environment variables.")
         }
 
-        // In a real app, you would fetch exchange requests from your API
-        // const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/received/${user.id}`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/user/${user.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
 
-        // For now, simulate an API call with a delay
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`)
+        }
 
-
+        const data = await response.json()
+        setExchangeRequests(data) // Mettre à jour le state avec les données reçues
       } catch (error: any) {
         console.error("Error fetching exchange requests:", error)
+        setRequestsError(error.message)
       } finally {
         setIsLoadingRequests(false)
       }
@@ -92,6 +100,7 @@ export default function Dashboard() {
 
     fetchExchangeRequests()
   }, [user])
+
 
   // Fetch my requests (requests sent)
   useEffect(() => {
@@ -109,17 +118,23 @@ export default function Dashboard() {
           throw new Error("API base URL is not defined. Please check your environment variables.")
         }
 
-        // In a real app, you would fetch my requests from your API
-        // const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/sent/${user.id}`)
+        // In a real app, you would make an API call:
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/user/${user.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Add any auth headers if needed
+          },
+          signal: AbortSignal.timeout(10000), // 10 second timeout
+        })
 
-        // For now, simulate an API call with a delay
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`)
+        }
 
-        // Simulate a successful response
-        // const data = await response.json()
-        // setMyRequests(data)
+        const data = await response.json()
+        setMyRequests(data)
 
-        // Using fallback data for now
 
       } catch (error: any) {
         console.error("Error fetching my requests:", error)
@@ -312,28 +327,14 @@ export default function Dashboard() {
                       <CardContent className="p-6">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="font-semibold text-lg">{request.object.name}</h3>
-                            <p className="text-gray-600 text-sm">{request.object.description}</p>
-                            <p className="text-gray-600 text-sm">Requested by: {request.requestedBy.username}</p>
-                            <p className="text-gray-600 text-sm">Date: {request.requestDate}</p>
-                            <div className="mt-2">{getStatusBadge(request.status)}</div>
                           </div>
                           {request.status === "PENDING" && (
                             <div className="flex space-x-2">
-                              <Button
-                                onClick={() => handleAcceptRequest(request.id)}
-                                className="bg-green-600 hover:bg-green-700"
-                                size="sm"
-                              >
+                              <Button onClick={() => handleAcceptRequest(request.id)} className="bg-green-600 hover:bg-green-700" size="sm">
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Accept
                               </Button>
-                              <Button
-                                onClick={() => handleRejectRequest(request.id)}
-                                variant="outline"
-                                className="text-red-600 border-red-600 hover:bg-red-50"
-                                size="sm"
-                              >
+                              <Button onClick={() => handleRejectRequest(request.id)} variant="outline" className="text-red-600 border-red-600 hover:bg-red-50" size="sm">
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Reject
                               </Button>
@@ -375,13 +376,16 @@ export default function Dashboard() {
                       <CardContent className="p-6">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="font-semibold text-lg">{request.object.name}</h3>
-                            <p className="text-gray-600 text-sm">{request.object.description}</p>
-                            <p className="text-gray-600 text-sm">Owner: {request.owner.username}</p>
-                            <p className="text-gray-600 text-sm">Requested on: {request.requestDate}</p>
+                            <h3 className="font-semibold text-lg">Exchange Request</h3>
+                            <p className="text-gray-600 text-sm">Proposed Object: {request.proposedObject.name}</p>
+                            <p className="text-gray-600 text-sm">Requested Object: {request.requestedObject.name}</p>
+                            <p className="text-gray-600 text-sm">Status: {request.status}</p>
+                            <p className="text-gray-600 text-sm mt-2">Proposed to: {request.requestedObject.user.username}</p>
+                            <p className="text-gray-600 text-sm">Proposed by: {request.proposedObject.user.username}</p>
+
                             <div className="mt-2">{getStatusBadge(request.status)}</div>
                           </div>
-                          <Link href={`/objects/${request.object.id}`}>
+                          <Link href={`/objects/${request.proposedObject.id}`}>
                             <Button variant="outline" size="sm">
                               View Object
                             </Button>

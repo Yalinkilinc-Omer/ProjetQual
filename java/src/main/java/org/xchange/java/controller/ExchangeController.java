@@ -40,9 +40,16 @@ public class ExchangeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Exchange> getExchangeById(@PathVariable Long id) {
-        return exchangeService.getExchangeById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Exchange> exchange = exchangeRepository.findById(id);
+        return exchange.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Exchange>> getExchangesByUserId(@PathVariable Long userId) {
+        List<Exchange> exchanges = exchangeRepository.findByUserId(userId);
+        if (exchanges.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(exchanges);
     }
 
     @PostMapping

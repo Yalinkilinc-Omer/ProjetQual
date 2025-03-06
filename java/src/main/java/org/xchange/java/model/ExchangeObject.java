@@ -1,6 +1,7 @@
 package org.xchange.java.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +16,13 @@ public class ExchangeObject {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @JsonProperty("category")
+    public void setCategoryById(Long categoryId) {
+        this.category = new Category();
+        this.category.setId(categoryId);
+    }
+
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -67,5 +75,15 @@ public class ExchangeObject {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+    public String toString() {
+        return "ExchangeObject{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", availability=" + availability +
+                ", category=" + category +
+                ", user=" + user +
+                '}';
     }
 }

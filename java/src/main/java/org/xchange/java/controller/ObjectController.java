@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.xchange.java.model.Category;
 import org.xchange.java.model.ExchangeObject;
 import org.xchange.java.model.User;
 import org.xchange.java.service.ObjectService;
@@ -24,6 +25,7 @@ public class ObjectController {
         this.objectService = objectService;
         this.userService = userService;
     }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<ExchangeObject>> getObjectsByUser(@PathVariable Long userId) {
         List<ExchangeObject> objects = objectService.getObjectsByUser(userId);
@@ -35,6 +37,7 @@ public class ObjectController {
         List<ExchangeObject> exchangeObjects = objectService.getAllObjects();
         return ResponseEntity.ok(exchangeObjects);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<ExchangeObject> getObjectById(@PathVariable Long id) {
         Optional<ExchangeObject> object = objectService.getObjectById(id);
@@ -44,6 +47,7 @@ public class ObjectController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @PostMapping
     public ResponseEntity<ExchangeObject> createObject(@RequestBody ExchangeObject exchangeObject) {
         User user = userService.getCurrentUser();
@@ -53,7 +57,10 @@ public class ObjectController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExchangeObject> updateObject(@PathVariable Long id, @RequestBody ExchangeObject exchangeObject) {
+    public ResponseEntity<ExchangeObject> updateObject(@PathVariable Long id,
+            @RequestBody ExchangeObject exchangeObject) {
+        User user = userService.getCurrentUser();
+        exchangeObject.setUser(user);
         ExchangeObject updatedExchangeObject = objectService.updateObject(id, exchangeObject);
         if (updatedExchangeObject != null) {
             return ResponseEntity.ok(updatedExchangeObject);

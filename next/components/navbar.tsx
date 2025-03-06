@@ -42,9 +42,6 @@ export default function Navbar() {
                 <Link href="/categories" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
                   Categories
                 </Link>
-                <Link href="/how-it-works" className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
-                  How It Works
-                </Link>
               </div>
             </div>
           </div>
@@ -125,9 +122,6 @@ export default function Navbar() {
             </Link>
             <Link href="/categories" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
               Categories
-            </Link>
-            <Link href="/how-it-works" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
-              How It Works
             </Link>
 
 

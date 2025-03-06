@@ -1,23 +1,9 @@
-import {
-  Smartphone,
-  Dumbbell,
-  BookOpen,
-  Music,
-  Utensils,
-  Sofa,
-  Shirt,
-  Gamepad2,
-  Wrench,
-  Palette,
-  Flower2,
-  Package,
-  type LucideIcon,
-} from "lucide-react"
+import { Smartphone, Dumbbell, BookOpen, Music, Utensils, Sofa, Shirt, Gamepad2, Wrench, Palette, Flower2, Package, TypeIcon as type, LucideIcon } from 'lucide-react';
 
 type CategoryIconProps = {
-  category: string
-  className?: string
-}
+  category: string;
+  className?: string;
+};
 
 export function CategoryIcon({ category, className = "" }: CategoryIconProps) {
   const iconMap: Record<string, LucideIcon> = {
@@ -32,11 +18,18 @@ export function CategoryIcon({ category, className = "" }: CategoryIconProps) {
     tools: Wrench,
     art: Palette,
     garden: Flower2,
-    other: Package,
-  }
+    other: Package
+  };
 
-  const IconComponent = iconMap[category] || Package
+  // Try to match the category name (case insensitive)
+  const normalizedCategory = category.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  return <IconComponent className={className} />
+  // Look for partial matches if exact match isn't found
+  const matchedKey = Object.keys(iconMap).find(key =>
+    normalizedCategory.includes(key) || key.includes(normalizedCategory)
+  );
+
+  const IconComponent = matchedKey ? iconMap[matchedKey] : Package;
+
+  return <IconComponent className={className} />;
 }
-

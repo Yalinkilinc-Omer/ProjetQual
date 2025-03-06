@@ -16,7 +16,7 @@ Avant de commencer, assurez-vous d'avoir installé les éléments suivants :
 * [Java 11](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
 * [Maven](https://maven.apache.org/install.html)
 * [Node.js](https://nodejs.org/) et [npm](https://www.npmjs.com/) ou [Yarn](https://yarnpkg.com/)
-* [PostgreSQL](https://www.postgresql.org/download/)
+* [MySQL](https://dev.mysql.com/downloads/)
 
 ## Configuration du backend (Spring Boot)
 
@@ -28,7 +28,7 @@ Avant de commencer, assurez-vous d'avoir installé les éléments suivants :
 
 2. Configurez la base de données dans `src/main/resources/application.properties` :
     ```properties
-    spring.datasource.url=jdbc:postgresql://localhost:5432/objectxchange
+    spring.datasource.url=jdbc:mysql://<votre_url_mysql>:<port>/<nom_de_la_base>
     spring.datasource.username=votre_utilisateur
     spring.datasource.password=votre_mot_de_passe
     spring.jpa.hibernate.ddl-auto=update

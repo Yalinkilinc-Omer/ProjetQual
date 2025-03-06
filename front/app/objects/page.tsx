@@ -9,15 +9,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Filter, RefreshCw } from "lucide-react"
 
-const categories = ["All Categories", "Electronics", "Sports", "Books", "Music", "Kitchen", "Furniture", "Clothing", "Other"]
 
 export default function ObjectsPage() {
   const [objects, setObjects] = useState([])
   const [filteredObjects, setFilteredObjects] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All Categories")
+  const [categories, setCategories] = useState<string[]>([])  // Pour stocker les catégories dynamiques
   const [isLoading, setIsLoading] = useState(true)
-
   useEffect(() => {
     const fetchObjects = async () => {
       try {
@@ -42,6 +41,23 @@ export default function ObjectsPage() {
     }
 
     fetchObjects()
+  }, [])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/categories`)  // Assurez-vous que l'endpoint existe
+        if (!response.ok) {
+          throw new Error("Failed to fetch categories")
+        }
+        const data = await response.json()
+        setCategories(["All Categories", ...data.map((cat: any) => cat.name)])  // Ajouter "All Categories" comme option par défaut
+      } catch (error) {
+        console.error("Error fetching categories:", error)
+      }
+    }
+
+    fetchCategories()
   }, [])
 
   useEffect(() => {

@@ -35,16 +35,15 @@ export default function ObjectDetailPage() {
           throw new Error("Failed to fetch object details")
         }
         const data = await response.json()
+        console.log(data)
 
         setObject({
           id: data.id,
           name: data.name ?? "Unnamed object",
           description: data.description ?? "No description available.",
           category: data.category?.name ?? "No category",
-          owner: data.owner?.username ?? "Unknown owner",
-          location: data.owner?.location ?? "Unknown location",
-          createdAt: data.createdAt ?? "Date unknown",
-          image: data.image ?? "/placeholder.svg?height=400&width=600",
+          owner: data.user?.username ?? "Unknown owner",
+          availability: data.availability ?? false,  // Ajout de l'availability ici
         })
       } catch (error) {
         console.error("Error fetching object:", error)
@@ -128,6 +127,11 @@ export default function ObjectDetailPage() {
 
           <p className="text-gray-700 mb-6 whitespace-pre-line">{object.description}</p>
 
+          {/* Section de disponibilité */}
+          <p className={`text-lg font-semibold ${object.availability ? "text-green-600" : "text-red-600"}`}>
+            {object.availability ? "Available" : "Not Available"}
+          </p>
+
           <Card className="mb-6">
             <CardContent className="p-4">
               <h3 className="font-semibold mb-4">Details</h3>
@@ -135,14 +139,6 @@ export default function ObjectDetailPage() {
                 <div className="flex items-center text-gray-600">
                   <User className="h-4 w-4 mr-2" />
                   <span>Owner: {object.owner}</span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  <span>Location: {object.location}</span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>Listed on: {object.createdAt}</span>
                 </div>
               </div>
             </CardContent>

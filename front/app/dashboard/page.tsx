@@ -6,27 +6,28 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Package, RefreshCw } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
 
 export default function Dashboard() {
   const [myObjects, setMyObjects] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const { user } = useAuth()
 
   useEffect(() => {
     const fetchObjects = async () => {
+      if (!user) {
+        return
+      }
+
+      setIsLoading(true)
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/object`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/object/user/${user.id}`)
         if (!response.ok) {
           throw new Error("Failed to fetch objects")
         }
         const data = await response.json()
-        const formattedData = data.map((obj: any) => ({
-          id: obj.id,
-          name: obj.name ?? "Unnamed object",
-          description: obj.description ?? "No description",
-          availability: obj.availability ? "Available" : "Unavailable",
-          category: obj.category?.name ?? "No category",
-        }))
-        setMyObjects(formattedData)
+        console.log(data)
+        setMyObjects(data)
       } catch (error) {
         console.error("Error fetching objects:", error)
       } finally {
@@ -35,7 +36,7 @@ export default function Dashboard() {
     }
 
     fetchObjects()
-  }, [])
+  }, [user])
 
   if (isLoading) {
     return (
@@ -68,21 +69,26 @@ export default function Dashboard() {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {myObjects.map((object) => (
-                <Card key={object.id}>
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold">{object.name}</h3>
-                    <p className="text-sm text-gray-600">{object.description}</p>
-                    <p className="text-sm text-gray-600">Category: {object.category}</p>
-                    <p className={`text-sm mt-2 ${object.availability === "Available" ? "text-green-600" : "text-red-600"}`}>
-                      {object.availability}
-                    </p>
-                    <Link href={`/objects/${object.id}`}>
-                      <Button className="mt-4 bg-blue-600 hover:bg-blue-700">View Object</Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+              {myObjects.map((object) => {
+                const { id, name, description, availability, category, user } = object
+
+                return (
+                  <Card key={id}>
+                    <CardContent className="p-6">
+                      <h3 className="text-lg font-semibold">{name}</h3>
+                      <p className="text-sm text-gray-600">{description}</p>
+                      <p className="text-sm text-gray-600">Category: {category?.name || 'No category'}</p>
+                      <p className={`text-sm mt-2 ${availability ? "text-green-600" : "text-red-600"}`}>
+                        {availability ? 'Available' : 'Not Available'}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-2">Owner: {user?.username || 'Unknown'}</p>
+                      <Link href={`/objects/${id}`}>
+                        <Button className="mt-4 bg-blue-600 hover:bg-blue-700">View Object</Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           )}
         </TabsContent>

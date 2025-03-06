@@ -20,6 +20,17 @@ public class Exchange {
     @JoinColumn(name = "requested_object_id", nullable = false)
     private ExchangeObject requestedObject;
 
+    public Exchange() {
+    }
+
+    public Exchange(Long id, String status, Long userId, ExchangeObject proposedObject, ExchangeObject requestedObject) {
+        this.id = id;
+        this.status = status;
+        this.userId = userId;
+        this.proposedObject = proposedObject;
+        this.requestedObject = requestedObject;
+    }
+
     public Long getId() {
         return id;
     }

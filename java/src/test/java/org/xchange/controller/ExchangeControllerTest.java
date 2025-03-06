@@ -47,56 +47,71 @@ public class ExchangeControllerTest {
 
     @Test
     public void testGetAllExchanges() {
+        // Créer une liste d'échanges factices
         List<Exchange> exchanges = Arrays.asList(new Exchange(), new Exchange());
         when(exchangeService.getAllExchanges()).thenReturn(exchanges);
 
+        // Appeler la méthode du contrôleur
         List<Exchange> response = exchangeController.getAllExchanges();
 
+        // Vérifier que la réponse est correcte
         assertEquals(exchanges, response);
     }
 
     @Test
     public void testGetExchangeById() {
+        // Créer un objet Exchange factice
         Exchange exchange = new Exchange();
         when(exchangeRepository.findById(anyLong())).thenReturn(Optional.of(exchange));
 
+        // Appeler la méthode du contrôleur
         ResponseEntity<Exchange> response = exchangeController.getExchangeById(1L);
 
+        // Vérifier que le statut de la réponse est OK
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        // Vérifier que le corps de la réponse est l'objet Exchange attendu
         assertEquals(exchange, response.getBody());
     }
 
     @Test
     public void testGetExchangeByIdNotFound() {
+        // Retourner un Optional vide pour simuler un échange introuvable
         when(exchangeRepository.findById(anyLong())).thenReturn(Optional.empty());
 
+        // Appeler la méthode du contrôleur
         ResponseEntity<Exchange> response = exchangeController.getExchangeById(1L);
 
+        // Vérifier que le statut de la réponse est NOT_FOUND
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
     public void testGetExchangesByUserId() {
+        // Créer une liste d'échanges factices
         List<Exchange> exchanges = Arrays.asList(new Exchange(), new Exchange());
         when(exchangeRepository.findByUserId(anyLong())).thenReturn(exchanges);
 
+        // Appeler la méthode du contrôleur
         ResponseEntity<List<Exchange>> response = exchangeController.getExchangesByUserId(1L);
 
+        // Vérifier que le statut de la réponse est OK
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(exchanges, response.getBody());
     }
 
     @Test
     public void testGetExchangesByUserIdNotFound() {
+        // Retourner une liste vide pour simuler aucun échange trouvé
         when(exchangeRepository.findByUserId(anyLong())).thenReturn(Arrays.asList());
-
         ResponseEntity<List<Exchange>> response = exchangeController.getExchangesByUserId(1L);
 
+        // Vérifier que le statut de la réponse est NOT_FOUND
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
     public void testCreateExchange() {
+        // Créer un objet Exchange factice
         Exchange exchange = new Exchange();
         ExchangeObject proposedObject = new ExchangeObject();
         proposedObject.setId(1L);
@@ -109,8 +124,10 @@ public class ExchangeControllerTest {
         when(objectRepository.findById(2L)).thenReturn(Optional.of(requestedObject));
         when(exchangeRepository.save(any(Exchange.class))).thenReturn(exchange);
 
+        // Appeler la méthode du contrôleur
         Exchange response = exchangeController.createExchange(exchange);
 
+        // Vérifier que la réponse est correcte
         assertEquals(exchange, response);
     }
 

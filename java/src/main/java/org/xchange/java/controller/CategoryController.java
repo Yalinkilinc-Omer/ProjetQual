@@ -1,12 +1,13 @@
 package org.xchange.java.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.xchange.java.model.Category;
-import org.xchange.java.model.ExchangeObject;
 import org.xchange.java.service.CategoryService;
+import org.xchange.java.service.ObjectService;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +17,12 @@ import java.util.Optional;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final ObjectService objectService;
 
     @Autowired
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, ObjectService objectService) {
         this.categoryService = categoryService;
+        this.objectService = objectService;
     }
 
     @GetMapping
@@ -59,10 +62,16 @@ public class CategoryController {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
-    /*
-    @GetMapping("/{id}/objects")
-    public ResponseEntity<List<ExchangeObject>> getObjectsByCategoryId(@PathVariable Long id) {
-        List<ExchangeObject> exchangeObjects = categoryService.getObjectsByCategoryId(id);
-        return ResponseEntity.ok(exchangeObjects);
-    }*/
+
+    @GetMapping("/{categoryId}/objects")
+    public ResponseEntity<List<Object>> getObjectsByCategory(@PathVariable Long categoryId) {
+        List<Object> objects = objectService.getObjectsByCategory(categoryId);
+
+        if (objects.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(objects);
+    }
+
 }

@@ -10,9 +10,13 @@ import java.util.Optional;
 
 @Service
 public class ObjectService {
-    @Autowired
-    private ObjectRepository objectRepository;
 
+    private final ObjectRepository objectRepository;
+
+    @Autowired
+    public ObjectService(ObjectRepository objectRepository) {
+        this.objectRepository = objectRepository;
+    }
     public List<ExchangeObject> getAllObjects() {
         return objectRepository.findAll();
     }
@@ -32,5 +36,11 @@ public class ObjectService {
 
     public void deleteObject(Long id) {
         objectRepository.deleteById(id);
+    }
+    public List<ExchangeObject> getObjectsByUser(Long userId) {
+        return objectRepository.findByUserId(userId);
+    }
+    public List<Object> getObjectsByCategory(Long categoryId) {
+        return objectRepository.findByCategoryId(categoryId);
     }
 }

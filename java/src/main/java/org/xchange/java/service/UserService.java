@@ -10,6 +10,7 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+    User currentUser;
 
     @Autowired
     private UserRepository userRepository;
@@ -47,10 +48,14 @@ public class UserService {
 
     public User login(String username, String password) {
         User user = userRepository.findByUsername(username);
+        currentUser = user;
         if (user != null && user.getPassword().equals(password)) {
             return user;
         }
         return null;
     }
 
+    public User getCurrentUser() {
+        return currentUser;
+    }
 }

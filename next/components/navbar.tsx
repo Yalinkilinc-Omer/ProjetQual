@@ -130,16 +130,6 @@ export default function Navbar() {
               How It Works
             </Link>
 
-            <div className="relative mt-3">
-              <input
-                type="text"
-                placeholder="Search objects..."
-                className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <Search size={18} />
-              </button>
-            </div>
 
             {isAuthenticated ? (
               <div className="space-y-2 mt-3">
@@ -148,15 +138,6 @@ export default function Navbar() {
                 </div>
                 <Link href="/dashboard" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
                   Dashboard
-                </Link>
-                <Link href="/my-objects" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
-                  My Objects
-                </Link>
-                <Link href="/notifications" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
-                  Notifications
-                </Link>
-                <Link href="/profile" className="block text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md">
-                  Profile
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -180,8 +161,9 @@ export default function Navbar() {
             )}
           </div>
         </div>
-      )}
-    </nav>
+      )
+      }
+    </nav >
   )
 }
 

@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -10,9 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
 
 export default function Register() {
   const router = useRouter()
+  const { register } = useAuth()
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -25,7 +26,6 @@ export default function Register() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev }
@@ -72,13 +72,7 @@ export default function Register() {
     setIsSubmitting(true)
 
     try {
-      // This would be replaced with your actual API call
-      console.log("Registering user:", formData)
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Redirect to login page after successful registration
+      await register(formData.username, formData.email, formData.password)
       router.push("/login?registered=true")
     } catch (error) {
       console.error("Registration error:", error)
@@ -196,4 +190,3 @@ export default function Register() {
     </div>
   )
 }
-

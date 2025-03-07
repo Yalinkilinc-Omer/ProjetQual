@@ -14,21 +14,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { RefreshCw, User, MapPin, Calendar, ArrowLeft, MessageCircle } from "lucide-react"
+import { RefreshCw, User, ArrowLeft, MessageCircle, AlertCircle } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
 
 export default function ObjectDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { user } = useAuth()
   const [object, setObject] = useState<any>(null)
+  const [userObjects, setUserObjects] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingUserObjects, setIsLoadingUserObjects] = useState(false)
   const [exchangeMessage, setExchangeMessage] = useState("")
+  const [selectedObjectId, setSelectedObjectId] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+  // Fetch the object details
   useEffect(() => {
     const fetchObject = async () => {
       setIsLoading(true)
+      setError(null)
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/object/${params.id}`)
         if (!response.ok) {
@@ -42,11 +51,13 @@ export default function ObjectDetailPage() {
           description: data.description ?? "No description available.",
           category: data.category?.name ?? "No category",
           owner: data.user?.username ?? "Unknown owner",
-          availability: data.availability ?? false,  // Ajout de l'availability ici
+          ownerId: data.user?.id,
+          availability: data.availability ?? false,
+          image: data.image || "/placeholder.svg?height=400&width=600",
         })
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching object:", error)
-        router.push("/objects")
+        setError(`Failed to load object: ${error.message}`)
       } finally {
         setIsLoading(false)
       }
@@ -57,13 +68,66 @@ export default function ObjectDetailPage() {
     }
   }, [params.id, router])
 
-  const handleExchangeRequest = async () => {
-    setIsSubmitting(true)
+  // Fetch user's objects when dialog opens
+  const fetchUserObjects = async () => {
+    if (!user) return
+
+    setIsLoadingUserObjects(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchange`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/object/user/${user.id}`)
+      if (!response.ok) {
+        throw new Error("Failed to fetch your objects")
+      }
+      const data = await response.json()
+
+      // Filter out the current object and unavailable objects
+      const availableObjects = data.filter(
+        (obj: any) => obj.id !== Number.parseInt(params.id as string) && obj.availability === true,
+      )
+
+      setUserObjects(availableObjects)
+
+      // Auto-select the first object if available
+      if (availableObjects.length > 0) {
+        setSelectedObjectId(availableObjects[0].id.toString())
+      }
+    } catch (error: any) {
+      console.error("Error fetching user objects:", error)
+      setError(`Failed to load your objects: ${error.message}`)
+    } finally {
+      setIsLoadingUserObjects(false)
+    }
+  }
+
+  const handleDialogOpen = (open: boolean) => {
+    setIsDialogOpen(open)
+    if (open) {
+      fetchUserObjects()
+    }
+  }
+
+  const handleExchangeRequest = async () => {
+    if (!user || !selectedObjectId) return
+
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      const exchangeData = {
+        proposedObject: {
+          id: Number.parseInt(selectedObjectId),
+        },
+        requestedObject: {
+          id: Number.parseInt(params.id as string),
+        },
+        status: "PENDING",
+        userId: user.id,
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ objectId: object.id, message: exchangeMessage }),
+        body: JSON.stringify(exchangeData),
       })
 
       if (!response.ok) {
@@ -73,8 +137,10 @@ export default function ObjectDetailPage() {
       setIsDialogOpen(false)
       alert("Exchange request sent successfully!")
       setExchangeMessage("")
-    } catch (error) {
+      setSelectedObjectId("")
+    } catch (error: any) {
       console.error("Error sending exchange request:", error)
+      setError(`Failed to send exchange request: ${error.message}`)
     } finally {
       setIsSubmitting(false)
     }
@@ -104,6 +170,9 @@ export default function ObjectDetailPage() {
     )
   }
 
+  // Check if this is the user's own object
+  const isOwnObject = user && user.id === object.ownerId
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Link href="/objects" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
@@ -114,7 +183,7 @@ export default function ObjectDetailPage() {
       <div className="grid md:grid-cols-2 gap-8">
         <div>
           <div className="rounded-lg overflow-hidden shadow-md">
-            <img src={object.image} alt={object.name} className="w-full h-auto" />
+            <img src={object.image || "/placeholder.svg"} alt={object.name} className="w-full h-auto" />
           </div>
         </div>
 
@@ -126,9 +195,9 @@ export default function ObjectDetailPage() {
 
           <p className="text-gray-700 mb-6 whitespace-pre-line">{object.description}</p>
 
-          {/* Section de disponibilité */}
-          <p className={`text-lg font-semibold ${object.availability ? "text-green-600" : "text-red-600"}`}>
-            {object.availability ? "Available" : "Not Available"}
+          {/* Availability status */}
+          <p className={`text-lg font-semibold mb-4 ${object.availability ? "text-green-600" : "text-red-600"}`}>
+            {object.availability ? "Available for Exchange" : "Not Available for Exchange"}
           </p>
 
           <Card className="mb-6">
@@ -143,46 +212,106 @@ export default function ObjectDetailPage() {
             </CardContent>
           </Card>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Request Exchange
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Request Exchange for {object.name}</DialogTitle>
-                <DialogDescription>
-                  Send a message to the owner explaining what you'd like to exchange for this item.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4 py-4">
-                <Textarea
-                  placeholder="I'm interested in your item and would like to exchange it for..."
-                  value={exchangeMessage}
-                  onChange={(e) => setExchangeMessage(e.target.value)}
-                  rows={5}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>
-                  Cancel
+          {isOwnObject ? (
+            <div className="flex space-x-4">
+              <Link href={`/objects/${object.id}/edit`} className="flex-1">
+                <Button className="w-full">Edit Object</Button>
+              </Link>
+              <Link href="/dashboard" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  View in Dashboard
                 </Button>
-                <Button
-                  onClick={handleExchangeRequest}
-                  disabled={!exchangeMessage.trim() || isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {isSubmitting ? "Sending..." : "Send Request"}
+              </Link>
+            </div>
+          ) : (
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" disabled={!object.availability}>
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Request Exchange
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Request Exchange for {object.name}</DialogTitle>
+                  <DialogDescription>Select one of your objects to propose for this exchange.</DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 py-4">
+                  {isLoadingUserObjects ? (
+                    <div className="flex justify-center py-4">
+                      <RefreshCw className="h-6 w-6 text-blue-600 animate-spin" />
+                    </div>
+                  ) : userObjects.length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-gray-600 mb-2">You don't have any available objects to exchange.</p>
+                      <Link href="/objects/add" className="text-blue-600 hover:underline">
+                        Add an object first
+                      </Link>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <label htmlFor="object-select" className="block text-sm font-medium">
+                          Select your object to exchange
+                        </label>
+                        <Select value={selectedObjectId} onValueChange={setSelectedObjectId}>
+                          <SelectTrigger id="object-select">
+                            <SelectValue placeholder="Select an object" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {userObjects.map((obj) => (
+                              <SelectItem key={obj.id} value={obj.id.toString()}>
+                                {obj.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label htmlFor="message" className="block text-sm font-medium">
+                          Message (optional)
+                        </label>
+                        <Textarea
+                          id="message"
+                          placeholder="Add a message to the owner..."
+                          value={exchangeMessage}
+                          onChange={(e) => setExchangeMessage(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {error && (
+                    <div className="bg-red-50 p-3 rounded-md border border-red-200">
+                      <p className="text-red-500 text-sm flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" />
+                        {error}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleExchangeRequest}
+                    disabled={!selectedObjectId || isSubmitting || userObjects.length === 0}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isSubmitting ? "Sending..." : "Send Exchange Request"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
     </div>
   )
 }
+

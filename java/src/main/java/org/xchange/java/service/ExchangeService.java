@@ -20,9 +20,26 @@ public class ExchangeService {
     private UserRepository userRepository;
 
 
+    public void acceptExchange(Long exchangeId) {
+        Exchange exchange = exchangeRepository.findById(exchangeId)
+                .orElseThrow(() -> new RuntimeException("Exchange not found"));
+
+        exchange.setStatus("ACCEPTED");
+        exchangeRepository.save(exchange);
+    }
+
+    public void rejectExchange(Long exchangeId) {
+        Exchange exchange = exchangeRepository.findById(exchangeId)
+                .orElseThrow(() -> new RuntimeException("Exchange not found"));
+
+        exchange.setStatus("REJECTED");
+        exchangeRepository.save(exchange);
+    }
+
     public List<Exchange> getAllExchanges() {
         return exchangeRepository.findAll();
     }
+
 
     public Optional<Exchange> getExchangeById(Long id) {
         return exchangeRepository.findById(id);

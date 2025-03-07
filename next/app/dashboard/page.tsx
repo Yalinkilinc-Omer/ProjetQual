@@ -63,25 +63,25 @@ export default function Dashboard() {
   // Fetch exchange requests (requests received)
   // Fetch exchange requests (requests received)
   useEffect(() => {
-    const fetchExchangeRequests = async (retryCount = 0) => {
+    const fetchIncomingExchangeRequests = async () => {
       if (!user) return
 
       try {
         setIsLoadingRequests(true)
         setRequestsError(null)
 
-
-        // ici je dois montrer les demandes d'échange reçues tous ce qui 
-        // est en dessous n'est pas bon pour l'instant 
-        if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+        if (!apiBaseUrl) {
           throw new Error("API base URL is not defined. Please check your environment variables.")
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/user/${user.id}`, {
+        const response = await fetch(`${apiBaseUrl}/exchanges/received?userId=${user.id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            // Add any auth headers if needed
           },
+          signal: AbortSignal.timeout(10000), // 10 second timeout
         })
 
         if (!response.ok) {
@@ -89,17 +89,19 @@ export default function Dashboard() {
         }
 
         const data = await response.json()
-        setExchangeRequests(data) // Mettre à jour le state avec les données reçues
+        console.log(data)
+        setExchangeRequests(data) // Mise à jour des demandes reçues
       } catch (error: any) {
-        console.error("Error fetching exchange requests:", error)
+        console.error("Error fetching incoming exchange requests:", error)
         setRequestsError(error.message)
       } finally {
         setIsLoadingRequests(false)
       }
     }
 
-    fetchExchangeRequests()
+    fetchIncomingExchangeRequests()
   }, [user])
+
 
 
   // Fetch my requests (requests sent)
@@ -148,17 +150,22 @@ export default function Dashboard() {
 
   const handleAcceptRequest = async (requestId: number) => {
     try {
-      // In a real app, you would make an API call:
-      // await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/${requestId}/accept`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     // Add any auth headers if needed
-      //   }
-      // });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/${requestId}/accept`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
 
-      // For now, we'll just update the state
-      setExchangeRequests((prev) => prev.map((req) => (req.id === requestId ? { ...req, status: "ACCEPTED" } : req)))
+      if (!response.ok) {
+        throw new Error(`Failed to accept request: ${response.statusText}`)
+      }
+
+      setExchangeRequests((prev) =>
+        prev.map((req) =>
+          req.id === requestId ? { ...req, status: "ACCEPTED" } : req
+        )
+      )
     } catch (error) {
       console.error("Error accepting request:", error)
     }
@@ -166,21 +173,27 @@ export default function Dashboard() {
 
   const handleRejectRequest = async (requestId: number) => {
     try {
-      // In a real app, you would make an API call:
-      // await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/${requestId}/reject`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     // Add any auth headers if needed
-      //   }
-      // });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/exchanges/${requestId}/reject`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
 
-      // For now, we'll just update the state
-      setExchangeRequests((prev) => prev.map((req) => (req.id === requestId ? { ...req, status: "REJECTED" } : req)))
+      if (!response.ok) {
+        throw new Error(`Failed to reject request: ${response.statusText}`)
+      }
+
+      setExchangeRequests((prev) =>
+        prev.map((req) =>
+          req.id === requestId ? { ...req, status: "REJECTED" } : req
+        )
+      )
     } catch (error) {
       console.error("Error rejecting request:", error)
     }
   }
+
 
   const getStatusBadge = (status: string) => {
     const normalizedStatus = status.toUpperCase()
@@ -301,15 +314,14 @@ export default function Dashboard() {
 
           <TabsContent value="exchange-requests">
             <div className="grid gap-6">
-              <h2 className="text-xl font-semibold">Exchange Requests ({exchangeRequests.length})</h2>
+              <h2 className="text-xl font-semibold">
+                Incoming Exchange Requests ({exchangeRequests.length})
+              </h2>
 
               {requestsError && (
                 <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md flex items-start">
                   <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-yellow-700">{requestsError}</p>
-
-                  </div>
+                  <p className="text-yellow-700">{requestsError}</p>
                 </div>
               )}
 
@@ -317,33 +329,60 @@ export default function Dashboard() {
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-10">
                     <Clock className="h-16 w-16 text-gray-400 mb-4" />
-                    <p className="text-gray-600 text-center">You don't have any exchange requests yet.</p>
+                    <p className="text-gray-600 text-center">
+                      You don't have any incoming exchange requests yet.
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="grid gap-4">
-                  {exchangeRequests.map((request) => (
-                    <Card key={request.id}>
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-center">
-                          <div>
-                          </div>
-                          {request.status === "PENDING" && (
-                            <div className="flex space-x-2">
-                              <Button onClick={() => handleAcceptRequest(request.id)} className="bg-green-600 hover:bg-green-700" size="sm">
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Accept
-                              </Button>
-                              <Button onClick={() => handleRejectRequest(request.id)} variant="outline" className="text-red-600 border-red-600 hover:bg-red-50" size="sm">
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
+                  {exchangeRequests.map((request) => {
+                    const { id, status, proposedObject, requestedObject } = request;
+                    const { name: proposedObjectName, description: proposedObjectDescription } = proposedObject;
+                    const { name: requestedObjectName, description: requestedObjectDescription, user: requester } = requestedObject;
+
+                    return (
+                      <Card key={id}>
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium">
+                                Requested by: {requester?.username}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Offering: {proposedObjectName} - {proposedObjectDescription}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                Requesting: {requestedObjectName} - {requestedObjectDescription}
+                              </p>
                             </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                            {status === "PENDING" && (
+                              <div className="flex space-x-2">
+                                <Button
+                                  onClick={() => handleAcceptRequest(id)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                  size="sm"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Accept
+                                </Button>
+                                <Button
+                                  onClick={() => handleRejectRequest(id)}
+                                  variant="outline"
+                                  className="text-red-600 border-red-600 hover:bg-red-50"
+                                  size="sm"
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                            <div>{getStatusBadge(status)}</div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </div>

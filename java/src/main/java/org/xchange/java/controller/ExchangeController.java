@@ -11,6 +11,7 @@ import org.xchange.java.repository.ExchangeRepository;
 import org.xchange.java.repository.ObjectRepository;
 import org.xchange.java.service.ExchangeService;
 import org.xchange.java.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,38 @@ public class ExchangeController {
     public List<Exchange> getAllExchanges() {
         return exchangeService.getAllExchanges();
     }
+    // Accepter une demande d'échange
+    @PostMapping("/{exchangeId}/accept")
+    public ResponseEntity<?> acceptExchange(@PathVariable Long exchangeId) {
+        try {
+            exchangeService.acceptExchange(exchangeId);
+            return ResponseEntity.ok("Exchange accepted successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // Refuser une demande d'échange
+    @PostMapping("/{exchangeId}/reject")
+    public ResponseEntity<?> rejectExchange(@PathVariable Long exchangeId) {
+        try {
+            exchangeService.rejectExchange(exchangeId);
+            return ResponseEntity.ok("Exchange rejected successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/received")
+    public ResponseEntity<List<Exchange>> getReceivedExchangeRequests(@RequestParam Long userId) {
+        List<Exchange> exchanges = exchangeRepository.findReceivedExchangeRequests(userId);
+        if (exchanges.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(exchanges);
+    }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Exchange> getExchangeById(@PathVariable Long id) {

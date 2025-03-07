@@ -71,6 +71,17 @@ export default function Navbar() {
                       </DropdownMenuItem>
 
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={`/profile/${user?.id}`}>Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/notifications">
+                          <Bell className="mr-2 h-4 w-4" />
+                          Notifications
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Log out</span>

@@ -380,14 +380,21 @@ export default function Dashboard() {
                             <p className="text-gray-600 text-sm">Proposed Object: {request.proposedObject.name}</p>
                             <p className="text-gray-600 text-sm">Requested Object: {request.requestedObject.name}</p>
                             <p className="text-gray-600 text-sm">Status: {request.status}</p>
-                            <p className="text-gray-600 text-sm mt-2">Proposed to: {request.requestedObject.user.username}</p>
+                            <Link href={`/profile/${request.requestedObject.user.id}`}>
+                              <p className="text-blue-600 text-sm">Requested to: {request.requestedObject.user.username}</p>
+                            </Link>
                             <p className="text-gray-600 text-sm">Proposed by: {request.proposedObject.user.username}</p>
 
                             <div className="mt-2">{getStatusBadge(request.status)}</div>
                           </div>
                           <Link href={`/objects/${request.proposedObject.id}`}>
                             <Button variant="outline" size="sm">
-                              View Object
+                              View proposed object
+                            </Button>
+                          </Link>
+                          <Link href={`/objects/${request.requestedObject.id}`}>
+                            <Button variant="outline" size="sm">
+                              View requested object
                             </Button>
                           </Link>
                         </div>

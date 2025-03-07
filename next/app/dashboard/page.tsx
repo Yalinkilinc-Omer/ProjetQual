@@ -338,22 +338,19 @@ export default function Dashboard() {
                 <div className="grid gap-4">
                   {exchangeRequests.map((request) => {
                     const { id, status, proposedObject, requestedObject } = request;
-                    const { name: proposedObjectName, description: proposedObjectDescription } = proposedObject;
-                    const { name: requestedObjectName, description: requestedObjectDescription, user: requester } = requestedObject;
-
                     return (
                       <Card key={id}>
                         <CardContent className="p-6">
                           <div className="flex justify-between items-center">
                             <div>
                               <p className="font-medium">
-                                Requested by: {requester?.username}
+                                Exchange Request from {proposedObject.user.username}
                               </p>
                               <p className="text-sm text-gray-500">
-                                Offering: {proposedObjectName} - {proposedObjectDescription}
+                                Proposed: {proposedObject.name} - {proposedObject.description}
                               </p>
                               <p className="text-sm text-gray-500">
-                                Requesting: {requestedObjectName} - {requestedObjectDescription}
+                                Requested: {requestedObject.name} - {requestedObject.description}
                               </p>
                             </div>
                             {status === "PENDING" && (

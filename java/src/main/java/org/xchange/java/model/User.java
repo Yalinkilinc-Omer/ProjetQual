@@ -38,4 +38,15 @@ package org.xchange.java.model;
         public void setEmail(String email) {
             this.email = email;
         }
+
+        // toString
+        @Override
+        public String toString() {
+            return "User{" +
+                    "id=" + id +
+                    ", username='" + username + '\'' +
+                    ", password='" + password + '\'' +
+                    ", email='" + email + '\'' +
+                    '}';
+        }
     }

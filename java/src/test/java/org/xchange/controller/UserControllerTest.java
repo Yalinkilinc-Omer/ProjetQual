@@ -45,6 +45,12 @@ public class UserControllerTest {
     public void testCreateUser() {
         User user = new User();
         when(userService.createUser(any(User.class))).thenReturn(user);
+        String username = "user";
+        String password = "pass";
+        String email = "email@mail.com";
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setEmail(email);
 
         User result = userController.createUser(user);
         assertEquals(user, result);

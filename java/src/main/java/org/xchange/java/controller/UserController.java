@@ -23,7 +23,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public User createUser(User user) {
+    public User createUser(@RequestBody User user) {
         return userService.createUser(user);
     }
 
@@ -37,7 +37,6 @@ public class UserController {
         }
     }
 
-
     @PostMapping("/update")
     public User updateUser(User user) {
         return userService.updateUser(user.getId(), user);
@@ -47,8 +46,5 @@ public class UserController {
     public void deleteUser(User user) {
         userService.deleteUser(user.getId());
     }
-
-
-
 
 }

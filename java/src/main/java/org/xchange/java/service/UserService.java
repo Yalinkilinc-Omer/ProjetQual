@@ -24,12 +24,12 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        // Ajoutez ici la logique de hachage du mot de passe avant de sauvegarder l'utilisateur
         return userRepository.save(user);
     }
 
     public User updateUser(Long id, User user) {
-        // Ajoutez ici la logique de hachage du mot de passe avant de sauvegarder l'utilisateur
+        // Ajoutez ici la logique de hachage du mot de passe avant de sauvegarder
+        // l'utilisateur
         user.setId(id);
         return userRepository.save(user);
     }

@@ -31,6 +31,10 @@ public class Exchange {
         this.requestedObject = requestedObject;
     }
 
+
+    public Long getRequesterUserId(){
+        return requestedObject.getUser().getId();
+    }
     public Long getId() {
         return id;
     }

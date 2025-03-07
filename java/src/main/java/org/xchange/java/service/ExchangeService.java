@@ -6,6 +6,7 @@ import org.xchange.java.model.Exchange;
 import org.xchange.java.model.ExchangeObject;
 import org.xchange.java.model.User;
 import org.xchange.java.repository.ExchangeRepository;
+import org.xchange.java.repository.ObjectRepository;
 import org.xchange.java.repository.UserRepository;
 
 import java.util.List;
@@ -18,12 +19,46 @@ public class ExchangeService {
     private ExchangeRepository exchangeRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ObjectRepository objectRepository;
 
 
     public void acceptExchange(Long exchangeId) {
         Exchange exchange = exchangeRepository.findById(exchangeId)
                 .orElseThrow(() -> new RuntimeException("Exchange not found"));
 
+        // Récupérer les objets impliqués
+        ExchangeObject proposedObject = exchange.getProposedObject();
+        ExchangeObject requestedObject = exchange.getRequestedObject();
+
+        // Récupérer les utilisateurs impliqués
+        User owner = proposedObject.getUser();
+        User requester = requestedObject.getUser();
+
+        // Vérifier si l'utilisateur connecté est bien le propriétaire de l'objet proposé
+        if (!owner.getId().equals(exchange.getUserId())) {
+            throw new RuntimeException("You are not the owner of the proposed object");
+        }
+
+        // Vérifier si l'objet demandé est disponible
+        if (!requestedObject.isAvailability()) {
+            throw new RuntimeException("The requested object is not available");
+        }
+
+        // Changer la disponibilité des objets
+        proposedObject.setAvailability(false);
+        requestedObject.setAvailability(false);
+
+        //changer les propriétaires des objets
+        proposedObject.setUser(requester);
+        requestedObject.setUser(owner);
+
+        // Mettre à jour les objets
+        objectRepository.save(proposedObject);
+
+        objectRepository.save(requestedObject);
+
+        // Mettre à jour le statut de l'échange
         exchange.setStatus("ACCEPTED");
         exchangeRepository.save(exchange);
     }
